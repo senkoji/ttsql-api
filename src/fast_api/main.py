@@ -1,26 +1,35 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+import openai
+import os
 from starlette.middleware.cors import CORSMiddleware
 
-class SqlResponse(BaseModel):
-    sqlformat: str
-    sqlcontent: str
+# OpenAI APIキーの設定
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+openai.api_key = OPENAI_API_KEY
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,   # 追記により追加
-    allow_methods=["*"],      # 追記により追加
-    allow_headers=["*"]       # 追記により追加
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
 )
 
-@app.get("/")
-def index():
-    return {"message": "Hello World"}
+class SQLRequest(BaseModel):
+    sqlformat: str
+    sqlcontent: str
 
 @app.post("/hoge")
-def console_result(data: SqlResponse):
-    input_data = data.sqlformat + data.sqlcontent
-    return {'あなたの入力値の結合！': input_data}
+async def generate_sql(request: SQLRequest):
+    try:
+        response = openai.Completion.create(
+            model="text-davinci-003",  # モデルの選択（最新のモデル名に更新してください）
+            prompt=f"In a database with a schema named '{request.sqlformat}', to extract data with the content '{request.sqlcontent}', what SQL query should be written? Please output the SQL statement.",
+            max_tokens=1000  # 応答の最大トークン数
+        )
+        return {"sql_query": response.choices[0].text.strip()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
