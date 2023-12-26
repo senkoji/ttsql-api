@@ -15,7 +15,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 openai.api_key = OPENAI_API_KEY
 
 # SQLAlchemy設定
-SQLALCHEMY_DATABASE_URL = "mysql+pymysql://root:~1000koji+1ki@127.0.0.1:3306/ttsqlpjt?charset=utf8mb4"
+SQLALCHEMY_DATABASE_URL = "mysql+pymysql://root:INPUTPASSWORD@127.0.0.1:3306/ttsqlpjt?charset=utf8mb4"
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
